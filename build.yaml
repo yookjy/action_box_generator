@@ -1,0 +1,22 @@
+targets:
+  $default:
+    builders:
+      action_box_generator|action_config_builder:
+        enabled: true
+      action_box_generator|action_builder:
+        enabled: true
+
+builders:
+  action_builder:
+    import: "package:action_box_generator/builder.dart"
+    builder_factories: ["actionBuilder"]
+    build_extensions: { ".dart": [".action.json"] }
+    auto_apply: dependents
+    runs_before: ["action_box_generator|action_config_builder"]
+    build_to: cache
+  action_config_builder:
+    import: "package:action_box_generator/builder.dart"
+    builder_factories: ["actionConfigBuilder"]
+    build_extensions: { ".dart": [".config.dart"] }
+    auto_apply: dependents
+    build_to: source
