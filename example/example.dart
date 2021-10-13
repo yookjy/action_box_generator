@@ -6,7 +6,7 @@ import 'package:action_box_generator/builder.dart';
 import 'example.config.dart';
 
 
-@ActionCenterConfig(actionCenterTypeName: 'SpcActionCenter', actionRootTypeName: 'ActionRoot', generateForDir: ['example'])
+@ActionCenterConfig(actionCenterTypeName: 'SpcActionCenter', actionRootTypeName: 'ActionRoot', generateForDir: ['*'])
 final SpcActionCenter actionCenter = SpcActionCenter();
 
 
