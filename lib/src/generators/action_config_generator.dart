@@ -50,6 +50,14 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionCenterConfig> {
       actionRootBuilder
     ];
 
+
+    final inputUri = buildStep.inputId.uri;
+    String? asset;
+    if (inputUri.scheme == 'asset') {
+      asset = inputUri.toString();
+      asset = asset.substring(0, asset.lastIndexOf('/'));
+    }
+
     var currentDirectoryBuilder = actionRootBuilder;
     metaDataList.forEach((meta) {
       final paths = meta.registerTo.split('.');
@@ -87,7 +95,12 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionCenterConfig> {
 
         if (directoryName == paths.last) {
           // 3. 액션 디렉토리에 액션 디스크립터 추가
-          final actionTypeRefer = refer(meta.typeName, meta.typeImport);
+          var typeImport = meta.typeImport;
+          if (asset?.isNotEmpty == true && typeImport.startsWith(RegExp(asset!))) {
+            typeImport = meta.typeImport.replaceAll(RegExp(asset), '.');
+          }
+
+          final actionTypeRefer = refer(meta.typeName, typeImport);
           //디스크립터 추가
           actionDirectoryBuilder.methods.add(Method((m) => m
             ..returns = TypeReference((t) => t
