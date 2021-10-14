@@ -29,8 +29,10 @@ class Test extends _i1.ActionDirectory {
       putIfAbsentDescriptor('getBoolValue', () => _i4.BoolInOut());
 }
 
-class SpcActionCenter extends _i1.ActionCenter<ActionRoot> {
-  SpcActionCenter() {
-    _i1.ActionCenter.setActionDirectory(ActionRoot());
+class SpcActionBox extends _i1.ActionBox<ActionRoot> {
+  SpcActionBox._internal() {
+    _i1.ActionBox.setActionDirectory(ActionRoot());
   }
+
+  static final SpcActionBox instance = SpcActionBox._internal();
 }

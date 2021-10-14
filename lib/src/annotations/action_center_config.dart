@@ -1,11 +1,11 @@
 
 class ActionCenterConfig {
-  final String actionCenterTypeName;
+  final String actionBoxTypeName;
   final String actionRootTypeName;
   final List<String> generateForDir;
 
   const ActionCenterConfig({
-    required this.actionCenterTypeName,
+    required this.actionBoxTypeName,
     required this.actionRootTypeName,
     this.generateForDir = const ['lib']});
 }

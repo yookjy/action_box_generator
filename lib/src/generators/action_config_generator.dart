@@ -12,8 +12,8 @@ import 'package:source_gen/source_gen.dart';
 
 class ActionConfigGenerator extends GeneratorForAnnotation<ActionCenterConfig> {
 
-  final Type actionCenterType = ActionCenter;
-  final String actionCenterImport = 'package:action_box/action_box.dart';
+  final Type actionBoxType = ActionBox;
+  final String actionBoxImport = 'package:action_box/action_box.dart';
 
   final Type actionDirectoryType = ActionDirectory;
   final String actionDirectoryImport = 'package:action_box/action_box.dart';
@@ -28,7 +28,7 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionCenterConfig> {
         .listValue
         .map((e) => e.toStringValue());
 
-    final generateActionCenterTypeName = annotation.read('actionCenterTypeName').stringValue;
+    final generateActionCenterTypeName = annotation.read('actionBoxTypeName').stringValue;
     final generateActionRootTypeName = annotation.read('actionRootTypeName').stringValue;
 
     final dirPattern = generateForDir.length > 1
@@ -132,19 +132,29 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionCenterConfig> {
       });
     });
 
+    final actionBoxTypeName = _capitalize(generateActionCenterTypeName);
+    final internalConstructor = '_internal';
     final generated = Library((lib) => lib
       ..body.addAll([
         ...actionDirectoriesDefinitionBuilders.map((b) => b.build()),
         Class((cls) => cls
-          ..name = _capitalize(generateActionCenterTypeName)
+          ..name = actionBoxTypeName
           ..extend = TypeReference((t) => t
-            ..symbol = _getTypeName(actionCenterType)
-            ..url = actionCenterImport
+            ..symbol = _getTypeName(actionBoxType)
+            ..url = actionBoxImport
             ..types.add(refer(actionRootBuilder.name!))
           )
           ..constructors.add(Constructor((ctr) => ctr
-            ..body = refer('${_getTypeName(actionCenterType)}.setActionDirectory', actionCenterImport)
+            ..name = internalConstructor
+            ..body = refer('${_getTypeName(actionBoxType)}.setActionDirectory', actionBoxImport)
               .call([refer('${actionRootBuilder.name!}').call([])]).statement
+          ))
+          ..fields.add(Field((f) => f
+            ..static = true
+            ..modifier = FieldModifier.final$
+            ..type = refer(actionBoxTypeName)
+            ..name = 'instance'
+            ..assignment = refer('$actionBoxTypeName.$internalConstructor').call([]).code
           ))
         )
       ])
