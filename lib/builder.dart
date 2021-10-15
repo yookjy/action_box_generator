@@ -7,13 +7,13 @@ Builder actionBuilder(BuilderOptions options) {
   return LibraryBuilder(
     ActionMetaGenerator(options.config),
     formatOutput: (generated) => generated.replaceAll(RegExp(r'//.*|\s'), ''),
-    generatedExtension: '.action.json',
+    generatedExtension: '.g.json',
   );
 }
 
 Builder actionConfigBuilder(BuilderOptions options) {
   return LibraryBuilder(
-      ActionConfigGenerator(),
-      generatedExtension: '.config.dart'
+    ActionConfigGenerator(),
+    generatedExtension: '.a.b.dart',
   );
 }

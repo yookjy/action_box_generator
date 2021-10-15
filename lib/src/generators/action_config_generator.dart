@@ -34,7 +34,7 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
         ? '{${generateForDir.join(',')}}'
         : '${generateForDir.first}';
 
-    final actionMetaFiles = Glob('$dirPattern/**.action.json');
+    final actionMetaFiles = Glob('$dirPattern/**.g.json');
     final metaDataList = <ActionMeta>[];
     await for (final id in buildStep.findAssets(actionMetaFiles)) {
       final json = jsonDecode(await buildStep.readAsString(id));

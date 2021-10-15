@@ -1,6 +1,6 @@
 name: action_box_generator
 description: Source code generator of the action_box package.
-version: 0.0.6
+version: 0.0.8
 homepage: https://github.com/yookjy/action_box_generator
 
 environment:

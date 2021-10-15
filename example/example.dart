@@ -1,6 +1,6 @@
 import 'package:action_box/action_box.dart';
 //add
-import 'example.config.dart';
+import 'example.a.b.dart';
 
 @ActionBoxConfig(
   actionBoxTypeName: 'SpcActionBox',
