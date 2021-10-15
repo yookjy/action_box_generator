@@ -1,5 +1,3 @@
-library action_box_generator;
-
 import 'package:action_box_generator/src/generators/action_config_generator.dart';
 import 'package:action_box_generator/src/generators/action_meta_generator.dart';
 import 'package:build/build.dart';
