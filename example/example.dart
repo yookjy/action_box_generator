@@ -11,16 +11,16 @@ final actionBox = SpcActionBox.instance;
 
 void howToUse() {
   //request data
-  actionBox.dispatch(actionChooser: (d) => d.valueConverter.getStringInStringOutValue);
+  actionBox.dispatch(action: (d) => d.valueConverter.getStringInStringOutValue);
   //or
   actionBox(
-    actionChooser: (root) => root.valueConverter.getStringInStringOutValue,
-    parameter: 'test',
+    action: (root) => root.valueConverter.getStringInStringOutValue,
+    param: 'test',
   );
 
   //subscribe result
   actionBox.subscribe(
-    actionChooser: (d) => d.valueConverter.getStringInStringOutValue,
+    action: (d) => d.valueConverter.getStringInStringOutValue,
     onNext: (String result) {
       print(result);
     }
