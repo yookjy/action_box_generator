@@ -1,7 +1,7 @@
 name: action_box_generator
-description: A starting point for Dart libraries or applications.
+description: Source code generator of the action_box package.
 version: 0.0.5
-# homepage: https://www.example.com
+homepage: https://github.com/yookjy/action_box_generator
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
