@@ -9,7 +9,7 @@ import 'package:dart_style/dart_style.dart';
 import 'package:glob/glob.dart';
 import 'package:source_gen/source_gen.dart';
 
-class ActionConfigGenerator extends GeneratorForAnnotation<ActionCenterConfig> {
+class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
 
   final Type actionBoxType = ActionBox;
   final String actionBoxImport = 'package:action_box/action_box.dart';
@@ -27,7 +27,7 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionCenterConfig> {
         .listValue
         .map((e) => e.toStringValue());
 
-    final generateActionCenterTypeName = annotation.read('actionBoxTypeName').stringValue;
+    final generateActionBoxTypeName = annotation.read('actionBoxTypeName').stringValue;
     final generateActionRootTypeName = annotation.read('actionRootTypeName').stringValue;
 
     final dirPattern = generateForDir.length > 1
@@ -131,7 +131,7 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionCenterConfig> {
       });
     });
 
-    final actionBoxTypeName = _capitalize(generateActionCenterTypeName);
+    final actionBoxTypeName = _capitalize(generateActionBoxTypeName);
     final internalConstructor = '_internal';
     final generated = Library((lib) => lib
       ..body.addAll([

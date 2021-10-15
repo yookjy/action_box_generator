@@ -3,7 +3,7 @@ import 'package:action_box_generator/builder.dart';
 //add
 import 'example.config.dart';
 
-@ActionCenterConfig(
+@ActionBoxConfig(
   actionBoxTypeName: 'SpcActionBox',
   actionRootTypeName: 'ActionRoot',
   generateForDir: ['*']
