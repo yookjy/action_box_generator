@@ -1,7 +1,6 @@
 
 
 import 'package:action_box/action_box.dart';
-import 'package:action_box_generator/builder.dart';
 
 @ActionConfig(descriptorName: 'getStringInStringOutValue', registerTo: 'valueConverter')
 class StringInStringOut extends Action<String, String> {

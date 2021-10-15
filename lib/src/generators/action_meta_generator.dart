@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:action_box/action_box.dart';
-import 'package:action_box_generator/src/annotations/action_config.dart';
 import 'package:action_box_generator/src/models/action_meta.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';

@@ -1,13 +1,9 @@
 library action_box_generator;
 
-export 'src/annotations/action_center_config.dart';
-export 'src/annotations/action_config.dart';
-
 import 'package:action_box_generator/src/generators/action_config_generator.dart';
 import 'package:action_box_generator/src/generators/action_meta_generator.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
-
 
 Builder actionBuilder(BuilderOptions options) {
   return LibraryBuilder(
