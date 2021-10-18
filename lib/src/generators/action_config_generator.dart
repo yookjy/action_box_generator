@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:action_box/action_box.dart';
 import 'package:action_box_generator/src/models/action_meta.dart';
+import 'package:action_box_generator/src/models/type_meta.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
@@ -12,23 +13,22 @@ import 'package:source_gen/source_gen.dart';
 class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
 
   final Type actionBoxType = ActionBox;
+  final Type actionDirType = ActionDirectory;
+  final Type actionDescriptorType = ActionDescriptor;
   final String actionBoxImport = 'package:action_box/action_box.dart';
 
-  final Type actionDirectoryType = ActionDirectory;
-  final String actionDirectoryImport = 'package:action_box/action_box.dart';
-
-  final Type actionDescriptorType = ActionDescriptor;
-  final String actionDescriptorImport = 'package:action_box/action_box.dart';
-
   @override
-  dynamic generateForAnnotatedElement(Element element, ConstantReader annotation, BuildStep buildStep) async {
+  dynamic generateForAnnotatedElement(Element element,
+      ConstantReader annotation, BuildStep buildStep) async {
     final generateForDir = annotation
         .read('generateForDir')
         .listValue
         .map((e) => e.toStringValue());
 
-    final generateActionBoxTypeName = annotation.read('actionBoxTypeName').stringValue;
-    final generateActionRootTypeName = annotation.read('actionRootTypeName').stringValue;
+    final actionBoxTypeName = _capitalize(annotation.read('actionBoxTypeName')
+      .stringValue);
+    final actionRootTypeName = _capitalize(annotation.read('actionRootTypeName')
+      .stringValue);
 
     final dirPattern = generateForDir.length > 1
         ? '{${generateForDir.join(',')}}'
@@ -42,8 +42,8 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
     }
 
     final actionRootBuilder = ClassBuilder()
-      ..name = _capitalize(generateActionRootTypeName)
-      ..extend = refer(_getTypeName(actionDirectoryType), actionDirectoryImport);
+      ..name = actionRootTypeName
+      ..extend = refer(_getTypeName(actionDirType), actionBoxImport);
 
     final actionDirectoriesDefinitionBuilders = <ClassBuilder>[
       actionRootBuilder
@@ -63,12 +63,14 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
       ClassBuilder actionDirectoryBuilder;
 
       paths.forEach((directoryName) {
-        final methodList = currentDirectoryBuilder.methods.build().where((m) => m.name == directoryName);
+        final methodList = currentDirectoryBuilder.methods
+          .build()
+          .where((m) => m.name == directoryName);
         if (methodList.isEmpty) {
           // 1. 액션 디렉토리 클래스 생성
           actionDirectoryBuilder = ClassBuilder()
           ..name = _capitalize(directoryName)
-          ..extend = refer(_getTypeName(actionDirectoryType), actionDirectoryImport);
+          ..extend = refer(_getTypeName(actionDirType), actionBoxImport);
 
           //클래스 정의 추가
           actionDirectoriesDefinitionBuilders.add(actionDirectoryBuilder);
@@ -94,21 +96,42 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
 
         if (directoryName == paths.last) {
           // 3. 액션 디렉토리에 액션 디스크립터 추가
-          var typeImport = meta.typeImport;
-          if (asset?.isNotEmpty == true && typeImport.startsWith(RegExp(asset!))) {
-            typeImport = meta.typeImport.replaceAll(RegExp(asset), '.');
+          var typeImport = meta.type.url;
+          if (asset?.isNotEmpty == true &&
+              typeImport != null && typeImport.startsWith(RegExp(asset!))) {
+            typeImport = typeImport.replaceAll(RegExp(asset), '.');
           }
 
-          final actionTypeRefer = refer(meta.typeName, typeImport);
+          TypeReference getReference(TypeMeta typeMeta) {
+            var url = typeMeta.url;
+            if (asset?.isNotEmpty == true &&
+              url != null && url.startsWith(asset!)) {
+              url = url.replaceAll(RegExp(asset), '.');
+            }
+
+            final typeArgs = <Reference>[];
+            typeMeta.typeArguments.forEach((typeArg) {
+              typeArgs.add(getReference(typeArg));
+            });
+
+            return TypeReference((t) => t
+              ..symbol = typeMeta.name
+              ..url = url
+              ..isNullable = typeMeta.isNullable
+              ..types.addAll(typeArgs)
+            );
+          }
+
+          final actionTypeRefer = refer(meta.type.name, typeImport);
           //디스크립터 추가
           actionDirectoryBuilder.methods.add(Method((m) => m
             ..returns = TypeReference((t) => t
               ..symbol = _getTypeName(actionDescriptorType)
-              ..url = actionDescriptorImport
+              ..url = actionBoxImport
               ..types.addAll([
                 actionTypeRefer,
-                refer(meta.parameterTypeName, meta.parameterTypeImport),
-                refer(meta.resultTypeName, meta.resultTypeImport),
+                getReference(meta.parameterType),
+                getReference(meta.resultType)
               ])
             )
             ..name = meta.descriptorName
@@ -122,16 +145,12 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
                 ).closure
             ]).code
           ));
-
-          if (methodList.isEmpty) {
-          }
         } else {
           currentDirectoryBuilder = actionDirectoryBuilder;
         }
       });
     });
 
-    final actionBoxTypeName = _capitalize(generateActionBoxTypeName);
     final internalConstructor = '_internal';
     final generated = Library((lib) => lib
       ..body.addAll([
@@ -159,7 +178,7 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
       ])
     );
 
-    final emitter = DartEmitter.scoped();
+    final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
     final formatted = DartFormatter().format('${generated.accept(emitter)}');
     return formatted;
   }
@@ -173,5 +192,4 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
     }
     return typeName;
   }
-
 }

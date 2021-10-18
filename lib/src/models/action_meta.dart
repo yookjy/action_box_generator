@@ -1,26 +1,20 @@
+import 'package:action_box_generator/src/models/type_meta.dart';
+
 class ActionMeta {
 
   final String descriptorName;
   final String registerTo;
 
-  final String typeName;
-  final String typeImport;
-
-  final String parameterTypeName;
-  final String? parameterTypeImport;
-
-  final String resultTypeName;
-  final String? resultTypeImport;
+  final TypeMeta type;
+  final TypeMeta parameterType;
+  final TypeMeta resultType;
 
   const ActionMeta({
     required this.descriptorName,
     required this.registerTo,
-    required this.typeName,
-    required this.typeImport,
-    required this.parameterTypeName,
-    required this.parameterTypeImport,
-    required this.resultTypeName,
-    required this.resultTypeImport,
+    required this.type,
+    required this.parameterType,
+    required this.resultType,
   });
 
   Map<String, dynamic> toJson() {
@@ -28,12 +22,9 @@ class ActionMeta {
     return {
       'descriptorName': descriptorName,
       'registerTo': registerTo,
-      'typeName': typeName,
-      'typeImport': typeImport,
-      'parameterTypeName': parameterTypeName,
-      'parameterTypeImport': parameterTypeImport,
-      'resultTypeName': resultTypeName,
-      'resultTypeImport': resultTypeImport,
+      'type': type,
+      'parameterType': parameterType,
+      'resultType': resultType
     } as Map<String, dynamic>;
   }
 
@@ -41,12 +32,9 @@ class ActionMeta {
     return ActionMeta(
       descriptorName: json['descriptorName'],
       registerTo: json['registerTo'],
-      typeName: json['typeName'],
-      typeImport: json['typeImport'],
-      parameterTypeName: json['parameterTypeName'],
-      parameterTypeImport: json['parameterTypeImport'],
-      resultTypeName: json['resultTypeName'],
-      resultTypeImport: json['resultTypeImport'],
+      type: TypeMeta.fromJson(json['type']),
+      parameterType: TypeMeta.fromJson(json['parameterType']),
+      resultType: TypeMeta.fromJson(json['resultType'])
     );
   }
 
