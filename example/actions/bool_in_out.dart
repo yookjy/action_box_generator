@@ -1,7 +1,7 @@
 
 import 'package:action_box/action_box.dart';
 
-@ActionConfig(descriptorName: 'getBoolValue', registerTo: 'valueConverter.testDir')
+@ActionConfig(alias: 'getBoolValue', parents: ['actionRoot'])
 class BoolInOut extends Action<bool, bool> {
 
   Channel exCh1 = Channel();

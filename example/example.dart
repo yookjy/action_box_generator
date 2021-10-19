@@ -3,9 +3,9 @@ import 'package:action_box/action_box.dart';
 import 'example.a.b.dart';
 
 @ActionBoxConfig(
-  actionBoxTypeName: 'SpcActionBox',
-  actionRootTypeName: 'ActionRoot',
-  generateForDir: ['*']
+  actionBoxType: 'SpcActionBox',
+  actionRootType: 'ActionRoot',
+  generateSourceDir: ['*']
 )
 final actionBox = SpcActionBox.instance;
 

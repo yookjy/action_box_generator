@@ -2,7 +2,7 @@
 
 import 'package:action_box/action_box.dart';
 
-@ActionConfig(descriptorName: 'getStringInStringOutValue', registerTo: 'valueConverter')
+@ActionConfig(alias: 'getStringInStringOutValue', parents: ['valueConverter'])
 class StringInStringOut extends Action<String, String> {
 
   Channel exCh1 = Channel();

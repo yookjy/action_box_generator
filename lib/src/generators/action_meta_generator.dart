@@ -22,8 +22,9 @@ class ActionMetaGenerator extends GeneratorForAnnotation<ActionConfig> {
       return '';
     }
 
-    final descriptorName = annotation.read('descriptorName').stringValue;
-    final registerTo = annotation.read('registerTo').stringValue;
+    final alias = annotation.read('alias').stringValue;
+    final parents = annotation.read('parents').listValue
+        .map((e) => e.toStringValue());
 
     String? getUrl(ClassElement element) {
       return element.source.uri.toString().startsWith('dart:core') == true ?
@@ -59,8 +60,8 @@ class ActionMetaGenerator extends GeneratorForAnnotation<ActionConfig> {
     }
 
     final meta = ActionMeta(
-      descriptorName: descriptorName,
-      registerTo: registerTo,
+      alias: alias,
+      parents: parents.where((p) => p != null && p.isNotEmpty).cast<String>().toList(),
       type: TypeMeta(
         name: element.name!,
         url: element.source!.uri.toString(),
