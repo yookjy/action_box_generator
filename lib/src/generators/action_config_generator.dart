@@ -11,24 +11,23 @@ import 'package:glob/glob.dart';
 import 'package:source_gen/source_gen.dart';
 
 class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
-
   final Type actionBoxType = ActionBox;
   final Type actionDirType = ActionDirectory;
   final Type actionDescriptorType = ActionDescriptor;
   final String actionBoxImport = 'package:action_box/action_box.dart';
 
   @override
-  dynamic generateForAnnotatedElement(Element element,
-      ConstantReader annotation, BuildStep buildStep) async {
+  dynamic generateForAnnotatedElement(
+      Element element, ConstantReader annotation, BuildStep buildStep) async {
     final generateSourceDir = annotation
         .read('generateSourceDir')
         .listValue
         .map((e) => e.toStringValue());
 
-    final actionBoxTypeName = _capitalize(annotation.read('actionBoxType')
-      .stringValue);
-    final actionRootTypeName = _capitalize(annotation.read('actionRootType')
-      .stringValue);
+    final actionBoxTypeName =
+        _capitalize(annotation.read('actionBoxType').stringValue);
+    final actionRootTypeName =
+        _capitalize(annotation.read('actionRootType').stringValue);
 
     final dirPattern = generateSourceDir.length > 1
         ? '{${generateSourceDir.join(',')}}'
@@ -69,7 +68,8 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
               .where((m) => m.name == directoryName);
           if (methodList.isEmpty) {
             // 1. 액션 디렉토리 클래스 생성
-            while (actionDirectoriesDefinitionBuilders.any((dir) => dir.name == directoryTypeName)) {
+            while (actionDirectoriesDefinitionBuilders
+                .any((dir) => dir.name == directoryTypeName)) {
               directoryTypeName = directoryTypeName + r'$';
             }
 
@@ -89,11 +89,8 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
               ..body = refer('putIfAbsentDirectory').call([
                 Method((m) => m
                   ..lambda = true
-                  ..body = actionDirectoryRefer.call([]).code
-                ).closure
-              ]).code
-            ));
-
+                  ..body = actionDirectoryRefer.call([]).code).closure
+              ]).code));
           } else {
             actionDirectoryBuilder = actionDirectoriesDefinitionBuilders
                 .firstWhere((def) => def.name == directoryTypeName);
@@ -103,14 +100,16 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
             // 3. 액션 디렉토리에 액션 디스크립터 추가
             var typeImport = meta.type.url;
             if (asset?.isNotEmpty == true &&
-                typeImport != null && typeImport.startsWith(RegExp(asset!))) {
+                typeImport != null &&
+                typeImport.startsWith(RegExp(asset!))) {
               typeImport = typeImport.replaceAll(RegExp(asset), '.');
             }
 
             TypeReference getReference(TypeMeta typeMeta) {
               var url = typeMeta.url;
               if (asset?.isNotEmpty == true &&
-                  url != null && url.startsWith(asset!)) {
+                  url != null &&
+                  url.startsWith(asset!)) {
                 url = url.replaceAll(RegExp(asset), '.');
               }
 
@@ -123,8 +122,7 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
                 ..symbol = typeMeta.name
                 ..url = url
                 ..isNullable = typeMeta.isNullable
-                ..types.addAll(typeArgs)
-              );
+                ..types.addAll(typeArgs));
             }
 
             final actionTypeRefer = refer(meta.type.name, typeImport);
@@ -137,8 +135,7 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
                   actionTypeRefer,
                   getReference(meta.parameterType),
                   getReference(meta.resultType)
-                ])
-              )
+                ]))
               ..name = meta.alias
               ..type = MethodType.getter
               ..lambda = true
@@ -146,10 +143,8 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
                 literalString(meta.alias),
                 Method((m) => m
                   ..lambda = true
-                  ..body = actionTypeRefer.call([]).code
-                ).closure
-              ]).code
-            ));
+                  ..body = actionTypeRefer.call([]).code).closure
+              ]).code));
           } else {
             currentDirectoryBuilder = actionDirectoryBuilder;
           }
@@ -166,23 +161,21 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
           ..extend = TypeReference((t) => t
             ..symbol = _getTypeName(actionBoxType)
             ..url = actionBoxImport
-            ..types.add(refer(actionRootBuilder.name!))
-          )
+            ..types.add(refer(actionRootBuilder.name!)))
           ..constructors.add(Constructor((ctr) => ctr
             ..name = internalConstructor
-            ..body = refer('${_getTypeName(actionBoxType)}.setActionDirectory', actionBoxImport)
-              .call([refer('${actionRootBuilder.name!}').call([])]).statement
-          ))
+            ..body = refer('${_getTypeName(actionBoxType)}.setActionDirectory',
+                    actionBoxImport)
+                .call(
+                    [refer('${actionRootBuilder.name!}').call([])]).statement))
           ..fields.add(Field((f) => f
             ..static = true
             ..modifier = FieldModifier.final$
             ..type = refer(actionBoxTypeName)
             ..name = 'instance'
-            ..assignment = refer('$actionBoxTypeName.$internalConstructor').call([]).code
-          ))
-        )
-      ])
-    );
+            ..assignment = refer('$actionBoxTypeName.$internalConstructor')
+                .call([]).code)))
+      ]));
 
     final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
     final formatted = DartFormatter().format('${generated.accept(emitter)}');

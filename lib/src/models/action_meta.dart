@@ -1,7 +1,6 @@
 import 'package:action_box_generator/src/models/type_meta.dart';
 
 class ActionMeta {
-
   final String alias;
   final List<String> parents;
 
@@ -30,12 +29,10 @@ class ActionMeta {
 
   factory ActionMeta.fromJson(Map<String, dynamic> json) {
     return ActionMeta(
-      alias: json['alias'],
-      parents: List<String>.from(json['parents']),
-      type: TypeMeta.fromJson(json['type']),
-      parameterType: TypeMeta.fromJson(json['parameterType']),
-      resultType: TypeMeta.fromJson(json['resultType'])
-    );
+        alias: json['alias'],
+        parents: List<String>.from(json['parents']),
+        type: TypeMeta.fromJson(json['type']),
+        parameterType: TypeMeta.fromJson(json['parameterType']),
+        resultType: TypeMeta.fromJson(json['resultType']));
   }
-
 }
