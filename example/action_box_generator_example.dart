@@ -10,18 +10,20 @@ final actionBox = SpcActionBox.instance;
 
 //How to use
 void main() {
+  var bag = DisposeBag();
+
   //request data
-  actionBox.dispatch(action: (d) => d.valueConverter.getStringInStringOutValue);
-  //or
-  actionBox(
+  actionBox.go(
     action: (root) => root.valueConverter.getStringInStringOutValue,
     param: 'test',
   );
 
   //subscribe result
-  actionBox.subscribe(
-      action: (d) => d.valueConverter.getStringInStringOutValue,
-      onNext: (String result) {
-        print(result);
-      });
+  actionBox(action: (d) => d.valueConverter.getStringInStringOutValue)
+      .listen((result) {
+    print(result);
+  }).disposedBy(bag);
+
+  //call dispose method when completed
+  //bag.dispose();
 }

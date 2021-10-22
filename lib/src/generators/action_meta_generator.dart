@@ -26,15 +26,15 @@ class ActionMetaGenerator extends GeneratorForAnnotation<ActionConfig> {
     final parents =
         annotation.read('parents').listValue.map((e) => e.toStringValue());
 
-    String? getUrl(ClassElement element) {
-      return element.source.uri.toString().startsWith('dart:core') == true
+    String? getUrl(Element? element) {
+      return element?.source?.uri.toString().startsWith('dart:core') == true
           ? null
-          : element.source.uri.toString();
+          : element?.source?.uri.toString();
     }
 
-    TypeMeta toTypeMeta(InterfaceType type) {
+    TypeMeta toTypeMeta(DartType type) {
       return TypeMeta(
-          name: type.element.name,
+          name: type.element!.name!,
           url: getUrl(type.element),
           isNullable: type.nullabilitySuffix == NullabilitySuffix.question,
           typeArguments: []);
@@ -42,8 +42,8 @@ class ActionMetaGenerator extends GeneratorForAnnotation<ActionConfig> {
 
     void makeTypeMetas(
         List<DartType> types, List<TypeMeta> typeMetas, TypeMeta? generic) {
-      types.cast<InterfaceType>().forEach((type) {
-        if (type.typeArguments.isNotEmpty) {
+      types.forEach((type) {
+        if (type is InterfaceType && type.typeArguments.isNotEmpty) {
           final typeMeta = generic ?? toTypeMeta(type);
           makeTypeMetas(type.typeArguments, typeMetas, typeMeta);
         } else if (generic == null) {
