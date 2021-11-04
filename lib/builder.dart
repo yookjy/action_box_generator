@@ -7,7 +7,7 @@ Builder actionBuilder(BuilderOptions options) {
   return LibraryBuilder(
     ActionMetaGenerator(options.config),
     formatOutput: (generated) => generated.replaceAll(RegExp(r'//.*|\s'), ''),
-    generatedExtension: '.g.json',
+    generatedExtension: '.a.b.json',
   );
 }
 

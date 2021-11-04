@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:action_box/action_box.dart';
 import 'package:action_box_generator/src/models/action_meta.dart';
 import 'package:action_box_generator/src/models/type_meta.dart';
+import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
@@ -11,10 +13,17 @@ import 'package:glob/glob.dart';
 import 'package:source_gen/source_gen.dart';
 
 class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
-  final Type actionBoxType = ActionBox;
+  final Type actionBoxType = ActionBoxBase;
   final Type actionDirType = ActionDirectory;
   final Type actionDescriptorType = ActionDescriptor;
   final String actionBoxImport = 'package:action_box/action_box.dart';
+
+  final streamControllerType = '$StreamController';
+  final streamControllerImport = 'dart:async';
+  final errFactoryName = 'errorStreamFactory';
+  final constructorName = 'shared';
+  final instanceName = '_instance';
+  final disposerName = 'dispose';
 
   @override
   dynamic generateForAnnotatedElement(
@@ -25,15 +34,15 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
         .map((e) => e.toStringValue());
 
     final actionBoxTypeName =
-        _capitalize(annotation.read('actionBoxType').stringValue);
-    final actionRootTypeName =
-        _capitalize(annotation.read('actionRootType').stringValue);
+        _capitalizeTypeName(annotation.read('actionBoxType').stringValue);
+    final actionRootTypeName = _makePrivateType(
+        _capitalizeTypeName(annotation.read('actionRootType').stringValue));
 
     final dirPattern = generateSourceDir.length > 1
         ? '{${generateSourceDir.join(',')}}'
         : '${generateSourceDir.first}';
 
-    final actionMetaFiles = Glob('$dirPattern/**.g.json');
+    final actionMetaFiles = Glob('$dirPattern/**.a.b.json');
     final metaDataList = <ActionMeta>[];
     await for (final id in buildStep.findAssets(actionMetaFiles)) {
       final json = jsonDecode(await buildStep.readAsString(id));
@@ -62,7 +71,8 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
         final paths = parent.split('.');
 
         paths.asMap().forEach((index, directoryName) {
-          var directoryTypeName = _capitalize(directoryName);
+          var directoryTypeName =
+              _makePrivateType(_capitalizeTypeName(directoryName));
           final methodList = currentDirectoryBuilder.methods
               .build()
               .where((m) => m.name == directoryName);
@@ -87,6 +97,7 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
               ..type = MethodType.getter
               ..name = directoryName
               ..body = refer('putIfAbsentDirectory').call([
+                literalString(directoryName),
                 Method((m) => m
                   ..lambda = true
                   ..body = actionDirectoryRefer.call([]).code).closure
@@ -152,7 +163,6 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
       });
     });
 
-    final internalConstructor = '_internal';
     final generated = Library((lib) => lib
       ..body.addAll([
         ...actionDirectoriesDefinitionBuilders.map((b) => b.build()),
@@ -162,19 +172,61 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
             ..symbol = _getTypeName(actionBoxType)
             ..url = actionBoxImport
             ..types.add(refer(actionRootBuilder.name!)))
-          ..constructors.add(Constructor((ctr) => ctr
-            ..name = internalConstructor
-            ..body = refer('${_getTypeName(actionBoxType)}.setActionDirectory',
-                    actionBoxImport)
-                .call(
-                    [refer('${actionRootBuilder.name!}').call([])]).statement))
           ..fields.add(Field((f) => f
             ..static = true
-            ..modifier = FieldModifier.final$
-            ..type = refer(actionBoxTypeName)
-            ..name = 'instance'
-            ..assignment = refer('$actionBoxTypeName.$internalConstructor')
-                .call([]).code)))
+            ..type = TypeReference((t) => t
+              ..symbol = actionBoxTypeName
+              ..isNullable = true)
+            ..name = instanceName))
+          ..constructors.addAll([
+            Constructor((ctr) => ctr
+              ..name = '_'
+              ..requiredParameters.add(Parameter((p) => p
+                ..name = errFactoryName
+                ..type = FunctionType((f) => f
+                  ..returnType = TypeReference((t) => t
+                    ..symbol = streamControllerType
+                    ..url = streamControllerImport)
+                  ..isNullable = true)))
+              ..initializers.add(refer(Keyword.SUPER.stringValue!).call([
+                Method((m) => m
+                  ..lambda = true
+                  ..body = Code(actionRootBuilder.name!)).closure.call([]),
+                refer('$errFactoryName').ifNullThen(Method((m) => m
+                  ..lambda = true
+                  ..body = refer(streamControllerType, streamControllerImport)
+                      .property('broadcast')
+                      .code).closure.call([]))
+              ]).code)),
+            Constructor((ctr) => ctr
+              ..factory = true
+              ..name = constructorName
+              ..optionalParameters.add(Parameter((p) => p
+                ..name = errFactoryName
+                ..named = true
+                ..type = FunctionType((f) => f
+                  ..returnType = TypeReference((t) => t
+                    ..symbol = streamControllerType
+                    ..url = streamControllerImport)
+                  ..isNullable = true)))
+              ..lambda = true
+              ..body = refer(instanceName)
+                  .assignNullAware(
+                      refer('$actionBoxTypeName._($errFactoryName)'))
+                  .code)
+          ])
+          ..methods.add(Method.returnsVoid((m) => m
+            ..name = disposerName
+            ..annotations.add(refer('override'))
+            ..body = Block((b) => b
+              ..statements.addAll([
+                refer(Keyword.SUPER.stringValue!)
+                    .property(disposerName)
+                    .call([]).statement,
+                refer(instanceName)
+                    .assign(refer(Keyword.NULL.stringValue!))
+                    .statement
+              ])))))
       ]));
 
     final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
@@ -182,7 +234,14 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
     return formatted;
   }
 
-  String _capitalize(String s) => s[0].toUpperCase() + s.substring(1);
+  String _capitalizeTypeName(String s) {
+    var index = s[0] != '_' ? 0 : 1;
+    return s[index].toUpperCase() + s.substring(index + 1);
+  }
+
+  String _makePrivateType(String s) {
+    return s[0] == '_' ? s : '_' + s;
+  }
 
   String _getTypeName(Type t) {
     var typeName = t.toString();
