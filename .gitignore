@@ -11,3 +11,4 @@ pubspec.lock
 /.idea/
 .idea/libraries/Dart_Packages.xml
 .idea/libraries/Dart_Packages.xml
+example/action_box_generator_example.a.b.dart
