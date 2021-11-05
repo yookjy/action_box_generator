@@ -14,7 +14,7 @@ import 'example.config.dart';
     //actionRootType: 'ActionRoot',
     generateSourceDir: ['*']
 )
-final actionBox = ActionBox.instance;
+final actionBox = ActionBox.shared();
 ```
 
 ## Features and bugs
