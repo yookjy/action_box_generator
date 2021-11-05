@@ -6,15 +6,15 @@ A simple usage example:
 
 ```dart
 import 'package:action_box/action_box.dart';
-//add
+//add generated file
 import 'example.config.dart';
 
 @ActionBoxConfig(
-    actionBoxType: 'SpcActionBox',
-    actionRootType: 'ActionRoot',
+    //actionBoxType: 'ActionBox',
+    //actionRootType: 'ActionRoot',
     generateSourceDir: ['*']
 )
-final actionBox = SpcActionBox.instance;
+final actionBox = ActionBox.instance;
 ```
 
 ## Features and bugs
