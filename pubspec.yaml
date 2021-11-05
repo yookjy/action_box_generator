@@ -1,6 +1,6 @@
 name: action_box_generator
 description: Generate boilerplate code for using action_box package.
-version: 0.0.16
+version: 0.0.17
 homepage: https://github.com/yookjy/action_box_generator
 
 environment:
@@ -14,7 +14,7 @@ dependencies:
   code_builder: ^4.1.0
   dart_style: ^2.0.3
   glob: ^2.0.1
-  action_box: ^0.0.18
+  action_box: ^0.0.20
 
 dev_dependencies:
   pedantic: ^1.10.0
