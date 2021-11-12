@@ -7,7 +7,7 @@ class StringInStringOut extends Action<String, String> {
   Channel exCh3 = Channel();
 
   @override
-  Stream<String?> process([String? param]) {
+  Stream<String> process([String? param]) {
     return Stream.value('(변환됨) $param');
   }
 }

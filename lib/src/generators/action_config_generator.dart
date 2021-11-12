@@ -18,12 +18,15 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
   final Type actionDescriptorType = ActionDescriptor;
   final String actionBoxImport = 'package:action_box/action_box.dart';
 
+  final defaultTimeoutType = '$Duration';
   final streamControllerType = '$StreamController';
   final streamControllerImport = 'dart:async';
   final errFactoryName = 'errorStreamFactory';
+  final defaultTimeoutName = 'defaultTimeout';
   final constructorName = 'shared';
   final instanceName = '_instance';
   final disposerName = 'dispose';
+  final internalConstructorName = '_';
 
   @override
   dynamic generateForAnnotatedElement(
@@ -180,39 +183,54 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
             ..name = instanceName))
           ..constructors.addAll([
             Constructor((ctr) => ctr
-              ..name = '_'
-              ..requiredParameters.add(Parameter((p) => p
-                ..name = errFactoryName
-                ..type = FunctionType((f) => f
-                  ..returnType = TypeReference((t) => t
-                    ..symbol = streamControllerType
-                    ..url = streamControllerImport)
-                  ..isNullable = true)))
+              ..name = internalConstructorName
+              ..requiredParameters.addAll([
+                Parameter((p) => p
+                  ..name = errFactoryName
+                  ..type = FunctionType((f) => f
+                    ..returnType = TypeReference((t) => t
+                      ..symbol = streamControllerType
+                      ..url = streamControllerImport)
+                    ..isNullable = true)),
+                Parameter((p) => p
+                  ..name = defaultTimeoutName
+                  ..type = TypeReference((t) => t
+                    ..symbol = defaultTimeoutType
+                    ..isNullable = true))
+              ])
               ..initializers.add(refer(Keyword.SUPER.stringValue!).call([
                 Method((m) => m
                   ..lambda = true
                   ..body = Code(actionRootBuilder.name!)).closure.call([]),
-                refer('$errFactoryName').ifNullThen(Method((m) => m
-                  ..lambda = true
-                  ..body = refer(streamControllerType, streamControllerImport)
-                      .property('broadcast')
-                      .code).closure.call([]))
-              ]).code)),
+              ], //positional parameters
+                  {
+                    '$errFactoryName': refer('$errFactoryName'),
+                    '$defaultTimeoutName': refer('$defaultTimeoutName')
+                  } //named parameters
+                  ).code)),
             Constructor((ctr) => ctr
               ..factory = true
               ..name = constructorName
-              ..optionalParameters.add(Parameter((p) => p
-                ..name = errFactoryName
-                ..named = true
-                ..type = FunctionType((f) => f
-                  ..returnType = TypeReference((t) => t
-                    ..symbol = streamControllerType
-                    ..url = streamControllerImport)
-                  ..isNullable = true)))
+              ..optionalParameters.addAll([
+                Parameter((p) => p
+                  ..name = errFactoryName
+                  ..named = true
+                  ..type = FunctionType((f) => f
+                    ..returnType = TypeReference((t) => t
+                      ..symbol = streamControllerType
+                      ..url = streamControllerImport)
+                    ..isNullable = true)),
+                Parameter((p) => p
+                  ..name = defaultTimeoutName
+                  ..type = TypeReference((t) => t
+                    ..symbol = '$defaultTimeoutType'
+                    ..isNullable = true))
+              ])
               ..lambda = true
               ..body = refer(instanceName)
-                  .assignNullAware(
-                      refer('$actionBoxTypeName._($errFactoryName)'))
+                  .assignNullAware(refer('$actionBoxTypeName')
+                      .property(internalConstructorName)
+                      .call([refer(errFactoryName), refer(defaultTimeoutName)]))
                   .code)
           ])
           ..methods.add(Method.returnsVoid((m) => m
