@@ -1,6 +1,6 @@
 name: action_box_generator
 description: Generate boilerplate code for using action_box package.
-version: 0.0.19
+version: 0.0.20
 homepage: https://github.com/yookjy/action_box_generator
 
 environment:

@@ -34,7 +34,8 @@ class ActionMetaGenerator extends GeneratorForAnnotation<ActionConfig> {
 
     TypeMeta toTypeMeta(DartType type) {
       return TypeMeta(
-          name: type.element!.name!,
+          name: type.element?.name ??
+              type.getDisplayString(withNullability: false),
           url: getUrl(type.element),
           isNullable: type.nullabilitySuffix == NullabilitySuffix.question,
           typeArguments: []);
