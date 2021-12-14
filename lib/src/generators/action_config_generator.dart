@@ -20,9 +20,11 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
 
   final defaultTimeoutType = '$Duration';
   final streamControllerType = '$StreamController';
+  final cacheStorageType = '$CacheStorage';
   final streamControllerImport = 'dart:async';
   final errFactoryName = 'errorStreamFactory';
   final defaultTimeoutName = 'defaultTimeout';
+  final cacheStoragesName = 'cacheStorages';
   final constructorName = 'shared';
   final instanceName = '_instance';
   final disposerName = 'dispose';
@@ -196,6 +198,12 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
                   ..name = defaultTimeoutName
                   ..type = TypeReference((t) => t
                     ..symbol = defaultTimeoutType
+                    ..isNullable = true)),
+                Parameter((p) => p
+                  ..name = cacheStoragesName
+                  ..type = TypeReference((t) => t
+                    ..symbol = _getTypeName(List)
+                    ..types.add(refer('$cacheStorageType', actionBoxImport))
                     ..isNullable = true))
               ])
               ..initializers.add(refer(Keyword.SUPER.stringValue!).call([
@@ -205,7 +213,8 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
               ], //positional parameters
                   {
                     '$errFactoryName': refer('$errFactoryName'),
-                    '$defaultTimeoutName': refer('$defaultTimeoutName')
+                    '$defaultTimeoutName': refer('$defaultTimeoutName'),
+                    '$cacheStoragesName': refer('$cacheStoragesName')
                   } //named parameters
                   ).code)),
             Constructor((ctr) => ctr
@@ -224,13 +233,19 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
                   ..name = defaultTimeoutName
                   ..type = TypeReference((t) => t
                     ..symbol = '$defaultTimeoutType'
+                    ..isNullable = true)),
+                Parameter((p) => p
+                  ..name = cacheStoragesName
+                  ..type = TypeReference((t) => t
+                    ..symbol = _getTypeName(List)
+                    ..types.add(refer('$cacheStorageType', actionBoxImport))
                     ..isNullable = true))
               ])
               ..lambda = true
               ..body = refer(instanceName)
                   .assignNullAware(refer('$actionBoxTypeName')
                       .property(internalConstructorName)
-                      .call([refer(errFactoryName), refer(defaultTimeoutName)]))
+                      .call([refer(errFactoryName), refer(defaultTimeoutName), refer(cacheStoragesName)]))
                   .code)
           ])
           ..methods.add(Method.returnsVoid((m) => m
