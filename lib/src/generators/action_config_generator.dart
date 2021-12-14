@@ -16,12 +16,13 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
   final Type actionBoxType = ActionBoxBase;
   final Type actionDirType = ActionDirectory;
   final Type actionDescriptorType = ActionDescriptor;
-  final String actionBoxImport = 'package:action_box/action_box.dart';
+  final defaultTimeoutType = Duration;
+  final streamControllerType = StreamController;
+  final cacheStorageType = CacheStorage;
 
-  final defaultTimeoutType = '$Duration';
-  final streamControllerType = '$StreamController';
-  final cacheStorageType = '$CacheStorage';
-  final streamControllerImport = 'dart:async';
+  final String actionBoxImport = 'package:action_box/action_box.dart';
+  final asyncImport = 'dart:async';
+
   final errFactoryName = 'errorStreamFactory';
   final defaultTimeoutName = 'defaultTimeout';
   final cacheStoragesName = 'cacheStorages';
@@ -191,13 +192,13 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
                   ..name = errFactoryName
                   ..type = FunctionType((f) => f
                     ..returnType = TypeReference((t) => t
-                      ..symbol = streamControllerType
-                      ..url = streamControllerImport)
+                      ..symbol = '$streamControllerType'
+                      ..url = asyncImport)
                     ..isNullable = true)),
                 Parameter((p) => p
                   ..name = defaultTimeoutName
                   ..type = TypeReference((t) => t
-                    ..symbol = defaultTimeoutType
+                    ..symbol = '$defaultTimeoutType'
                     ..isNullable = true)),
                 Parameter((p) => p
                   ..name = cacheStoragesName
@@ -226,8 +227,8 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
                   ..named = true
                   ..type = FunctionType((f) => f
                     ..returnType = TypeReference((t) => t
-                      ..symbol = streamControllerType
-                      ..url = streamControllerImport)
+                      ..symbol = '$streamControllerType'
+                      ..url = asyncImport)
                     ..isNullable = true)),
                 Parameter((p) => p
                   ..name = defaultTimeoutName
