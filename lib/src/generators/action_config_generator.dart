@@ -246,7 +246,11 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
               ..body = refer(instanceName)
                   .assignNullAware(refer('$actionBoxTypeName')
                       .property(internalConstructorName)
-                      .call([refer(errFactoryName), refer(defaultTimeoutName), refer(cacheStoragesName)]))
+                      .call([
+                    refer(errFactoryName),
+                    refer(defaultTimeoutName),
+                    refer(cacheStoragesName)
+                  ]))
                   .code)
           ])
           ..methods.add(Method.returnsVoid((m) => m
