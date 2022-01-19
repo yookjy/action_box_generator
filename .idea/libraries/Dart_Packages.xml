@@ -12,7 +12,7 @@
         <entry key="action_box">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/action_box-0.0.35/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/action_box-0.0.39/lib" />
             </list>
           </value>
         </entry>
@@ -475,7 +475,7 @@
     </properties>
     <CLASSES>
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/_fe_analyzer_shared-26.0.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/action_box-0.0.35/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/action_box-0.0.39/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/analyzer-2.3.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/args-2.3.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/async-2.8.2/lib" />

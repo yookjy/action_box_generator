@@ -23,7 +23,7 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
   final String actionBoxImport = 'package:action_box/action_box.dart';
   final asyncImport = 'dart:async';
 
-  final errFactoryName = 'errorStreamFactory';
+  final universalStreamFactoryName = 'universalStreamFactory';
   final defaultTimeoutName = 'defaultTimeout';
   final cacheStoragesName = 'cacheStorages';
   final constructorName = 'shared';
@@ -189,7 +189,7 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
               ..name = internalConstructorName
               ..requiredParameters.addAll([
                 Parameter((p) => p
-                  ..name = errFactoryName
+                  ..name = universalStreamFactoryName
                   ..type = FunctionType((f) => f
                     ..returnType = TypeReference((t) => t
                       ..symbol = '$streamControllerType'
@@ -213,9 +213,10 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
                   ..body = Code(actionRootBuilder.name!)).closure.call([]),
               ], //positional parameters
                   {
-                    '$errFactoryName': refer('$errFactoryName'),
-                    '$defaultTimeoutName': refer('$defaultTimeoutName'),
-                    '$cacheStoragesName': refer('$cacheStoragesName')
+                    '$universalStreamFactoryName':
+                        refer(universalStreamFactoryName),
+                    '$defaultTimeoutName': refer(defaultTimeoutName),
+                    '$cacheStoragesName': refer(cacheStoragesName)
                   } //named parameters
                   ).code)),
             Constructor((ctr) => ctr
@@ -223,7 +224,7 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
               ..name = constructorName
               ..optionalParameters.addAll([
                 Parameter((p) => p
-                  ..name = errFactoryName
+                  ..name = universalStreamFactoryName
                   ..named = true
                   ..type = FunctionType((f) => f
                     ..returnType = TypeReference((t) => t
@@ -247,7 +248,7 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
                   .assignNullAware(refer('$actionBoxTypeName')
                       .property(internalConstructorName)
                       .call([
-                    refer(errFactoryName),
+                    refer(universalStreamFactoryName),
                     refer(defaultTimeoutName),
                     refer(cacheStoragesName)
                   ]))
