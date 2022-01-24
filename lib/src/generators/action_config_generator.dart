@@ -16,18 +16,23 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
   final Type actionBoxType = ActionBoxBase;
   final Type actionDirType = ActionDirectory;
   final Type actionDescriptorType = ActionDescriptor;
+  final Type actionErrorType = ActionError;
   final defaultTimeoutType = Duration;
   final streamControllerType = StreamController;
+  final eventSinkType = EventSink;
   final cacheStorageType = CacheStorage;
 
   final String actionBoxImport = 'package:action_box/action_box.dart';
   final asyncImport = 'dart:async';
 
-  final universalStreamFactoryName = 'universalStreamFactory';
+  final createUniversalStreamControllerName = 'createUniversalStreamController';
+  final handleCommonErrorName = 'handleCommonError';
   final defaultTimeoutName = 'defaultTimeout';
   final cacheStoragesName = 'cacheStorages';
   final constructorName = 'shared';
   final instanceName = '_instance';
+  final putIfAbsentDirectoryName = 'putIfAbsentDirectory';
+  final putIfAbsentDescriptorName = 'putIfAbsentDescriptor';
   final disposerName = 'dispose';
   final internalConstructorName = '_';
 
@@ -102,7 +107,7 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
               ..returns = actionDirectoryRefer
               ..type = MethodType.getter
               ..name = directoryName
-              ..body = refer('putIfAbsentDirectory').call([
+              ..body = refer(putIfAbsentDirectoryName).call([
                 literalString(directoryName),
                 Method((m) => m
                   ..lambda = true
@@ -156,7 +161,7 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
               ..name = meta.alias
               ..type = MethodType.getter
               ..lambda = true
-              ..body = refer('putIfAbsentDescriptor').call([
+              ..body = refer(putIfAbsentDescriptorName).call([
                 literalString(meta.alias),
                 Method((m) => m
                   ..lambda = true
@@ -189,11 +194,23 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
               ..name = internalConstructorName
               ..requiredParameters.addAll([
                 Parameter((p) => p
-                  ..name = universalStreamFactoryName
+                  ..name = createUniversalStreamControllerName
                   ..type = FunctionType((f) => f
                     ..returnType = TypeReference((t) => t
                       ..symbol = '$streamControllerType'
                       ..url = asyncImport)
+                    ..isNullable = true)),
+                Parameter((p) => p
+                  ..name = handleCommonErrorName
+                  ..type = FunctionType((f) => f
+                    ..requiredParameters.addAll([
+                      TypeReference((t) => t
+                        ..symbol = '$actionErrorType'
+                        ..url = actionBoxImport),
+                      TypeReference((t) => t
+                        ..symbol = '$eventSinkType'
+                        ..url = asyncImport)
+                    ])
                     ..isNullable = true)),
                 Parameter((p) => p
                   ..name = defaultTimeoutName
@@ -213,10 +230,11 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
                   ..body = Code(actionRootBuilder.name!)).closure.call([]),
               ], //positional parameters
                   {
-                    '$universalStreamFactoryName':
-                        refer(universalStreamFactoryName),
-                    '$defaultTimeoutName': refer(defaultTimeoutName),
-                    '$cacheStoragesName': refer(cacheStoragesName)
+                    createUniversalStreamControllerName:
+                        refer(createUniversalStreamControllerName),
+                    handleCommonErrorName: refer(handleCommonErrorName),
+                    defaultTimeoutName: refer(defaultTimeoutName),
+                    cacheStoragesName: refer(cacheStoragesName)
                   } //named parameters
                   ).code)),
             Constructor((ctr) => ctr
@@ -224,12 +242,24 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
               ..name = constructorName
               ..optionalParameters.addAll([
                 Parameter((p) => p
-                  ..name = universalStreamFactoryName
+                  ..name = createUniversalStreamControllerName
                   ..named = true
                   ..type = FunctionType((f) => f
                     ..returnType = TypeReference((t) => t
                       ..symbol = '$streamControllerType'
                       ..url = asyncImport)
+                    ..isNullable = true)),
+                Parameter((p) => p
+                  ..name = handleCommonErrorName
+                  ..type = FunctionType((f) => f
+                    ..requiredParameters.addAll([
+                      TypeReference((t) => t
+                        ..symbol = '$actionErrorType'
+                        ..url = actionBoxImport),
+                      TypeReference((t) => t
+                        ..symbol = '$eventSinkType'
+                        ..url = asyncImport)
+                    ])
                     ..isNullable = true)),
                 Parameter((p) => p
                   ..name = defaultTimeoutName
@@ -248,7 +278,8 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
                   .assignNullAware(refer('$actionBoxTypeName')
                       .property(internalConstructorName)
                       .call([
-                    refer(universalStreamFactoryName),
+                    refer(createUniversalStreamControllerName),
+                    refer(handleCommonErrorName),
                     refer(defaultTimeoutName),
                     refer(cacheStoragesName)
                   ]))
