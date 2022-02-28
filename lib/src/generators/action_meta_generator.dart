@@ -33,32 +33,27 @@ class ActionMetaGenerator extends GeneratorForAnnotation<ActionConfig> {
     }
 
     TypeMeta toTypeMeta(DartType type) {
-      return TypeMeta(
+      var typeMeta = TypeMeta(
           name: type.element?.name ??
               type.getDisplayString(withNullability: false),
           url: getUrl(type.element),
           isNullable: type.nullabilitySuffix == NullabilitySuffix.question,
           typeArguments: []);
-    }
 
-    void makeTypeMetas(
-        List<DartType> types, List<TypeMeta> typeMetas, TypeMeta? generic) {
-      types.forEach((type) {
-        if (type is InterfaceType && type.typeArguments.isNotEmpty) {
-          final typeMeta = generic ?? toTypeMeta(type);
-          makeTypeMetas(type.typeArguments, typeMetas, typeMeta);
-        } else if (generic == null) {
-          typeMetas.add(toTypeMeta(type));
-        } else {
-          generic.typeArguments.add(toTypeMeta(type));
-          typeMetas.add(generic);
-        }
-      });
+      if (type is InterfaceType && type.typeArguments.isNotEmpty) {
+        type.typeArguments.forEach((arg) {
+          typeMeta.typeArguments.add(toTypeMeta(arg));
+        });
+      }
+
+      return typeMeta;
     }
 
     final typeMetas = <TypeMeta>[];
     if (element is ClassElement && element.supertype != null) {
-      makeTypeMetas(element.supertype!.typeArguments, typeMetas, null);
+      element.supertype!.typeArguments.forEach((type) {
+        typeMetas.add(toTypeMeta(type));
+      });
     }
 
     final meta = ActionMeta(
