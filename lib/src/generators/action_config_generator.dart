@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:action_box/action_box.dart';
+import 'package:action_box_generator/src/import.dart';
 import 'package:action_box_generator/src/models/action_meta.dart';
 import 'package:action_box_generator/src/models/type_meta.dart';
 import 'package:analyzer/dart/ast/token.dart';
@@ -21,9 +22,6 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
   final streamControllerType = StreamController;
   final eventSinkType = EventSink;
   final cacheStorageType = CacheStorage;
-
-  final String actionBoxImport = 'package:action_box/action_box.dart';
-  final asyncImport = 'dart:async';
 
   final createUniversalStreamControllerName = 'createUniversalStreamController';
   final handleCommonErrorName = 'handleCommonError';

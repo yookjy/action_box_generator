@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:action_box/action_box.dart';
+import 'package:action_box_generator/src/import.dart';
 import 'package:action_box_generator/src/models/action_meta.dart';
 import 'package:action_box_generator/src/models/type_meta.dart';
 import 'package:analyzer/dart/element/element.dart';
@@ -27,9 +28,15 @@ class ActionMetaGenerator extends GeneratorForAnnotation<ActionConfig> {
         annotation.read('parents').listValue.map((e) => e.toStringValue());
 
     String? getUrl(Element? element) {
-      return element?.source?.uri.toString().startsWith('dart:core') == true
-          ? null
-          : element?.source?.uri.toString();
+      var url = element?.source?.uri.toString();
+      if (url != null) {
+        if (url.startsWith(coreImport)) {
+          return null;
+        } else if (url.startsWith('package:action_box/')) {
+          return actionBoxImport;
+        }
+      }
+      return url;
     }
 
     TypeMeta toTypeMeta(DartType type) {
