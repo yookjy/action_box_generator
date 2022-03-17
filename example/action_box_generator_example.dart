@@ -11,7 +11,10 @@ final actionBox = ActionBox.shared();
 //How to use
 void main() {
   var bag = DisposeBag();
-
+  actionBox((d) => d.ui.common.etc.e);
+  actionBox((d) => d.ui.common.e);
+  actionBox((d) => d.gateway.common.e);
+  actionBox((d) => d.gateway.common.etc.c);
   //request data
   actionBox((root) => root.valueConverter.getStringInStringOutValue)
       .go(param: 'test', channel: (c) => c.exCh1);

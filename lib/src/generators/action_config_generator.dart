@@ -73,102 +73,106 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
       asset = asset.substring(0, asset.lastIndexOf('/'));
     }
 
+    var aliasMap = <String, String>{'': '$actionRootTypeName'};
+    metaDataList
+        .map((e) => e.parents)
+        .expand((path) => path)
+        .toSet()
+        .forEach((p) {
+      var split = p.split('.');
+      split.asMap().forEach((index, dirName) {
+        var key = split.getRange(0, index + 1).join('.');
+        if (!aliasMap.containsKey(key)) {
+          var clsName = _makePrivateType(_capitalizeTypeName(dirName));
+          //이름이 중복되면 이름 뒤에 $를 계속 붙임
+          while (aliasMap.containsValue(clsName)) {
+            clsName = '$clsName\$';
+          }
+          aliasMap[key] = clsName;
+          var actionDirectoryBuilder = ClassBuilder()
+            ..name = clsName
+            ..extend = refer(_getTypeName(actionDirType), actionBoxImport);
+          //모든 디렉토리 정의 등록
+          actionDirectoriesDefinitionBuilders.add(actionDirectoryBuilder);
+
+          var parentBuilder = actionRootBuilder;
+          if (index > 0) {
+            var parent = split.getRange(0, index).join('.');
+            //변경된 이름으로 디렉토리 정의에서 획득
+            parentBuilder = actionDirectoriesDefinitionBuilders
+                .firstWhere((e) => e.name == aliasMap[parent]);
+          }
+
+          final actionDirectoryRefer = refer(actionDirectoryBuilder.name!);
+          // 2. 액션 디렉토리를 상위 디렉토리에 추가
+          parentBuilder.methods.add(Method((m) => m
+            ..returns = actionDirectoryRefer
+            ..type = MethodType.getter
+            ..name = dirName
+            ..body = refer(putIfAbsentDirectoryName).call([
+              literalString(dirName),
+              Method((m) => m
+                ..lambda = true
+                ..body = actionDirectoryRefer.call([]).code).closure
+            ]).code));
+        }
+      });
+    });
+
     metaDataList.forEach((meta) {
-      var currentDirectoryBuilder = actionRootBuilder;
       meta.parents.forEach((parent) {
-        ClassBuilder actionDirectoryBuilder;
-        final paths = parent.split('.');
+        var alias = aliasMap[parent];
+        var directoryBuilder = actionDirectoriesDefinitionBuilders
+            .firstWhere((b) => b.name == alias);
 
-        paths.asMap().forEach((index, directoryName) {
-          var directoryTypeName =
-              _makePrivateType(_capitalizeTypeName(directoryName));
-          final methodList = currentDirectoryBuilder.methods
-              .build()
-              .where((m) => m.name == directoryName);
-          if (methodList.isEmpty) {
-            // 1. 액션 디렉토리 클래스 생성
-            while (actionDirectoriesDefinitionBuilders
-                .any((dir) => dir.name == directoryTypeName)) {
-              directoryTypeName = directoryTypeName + r'$';
-            }
+        // 액션 디렉토리에 액션 디스크립터 추가
+        var typeImport = meta.type.url;
+        if (asset?.isNotEmpty == true &&
+            typeImport != null &&
+            typeImport.startsWith(RegExp(asset!))) {
+          typeImport = typeImport.replaceAll(RegExp(asset), '.');
+        }
 
-            actionDirectoryBuilder = ClassBuilder()
-              ..name = directoryTypeName
-              ..extend = refer(_getTypeName(actionDirType), actionBoxImport);
-
-            //클래스 정의 추가
-            actionDirectoriesDefinitionBuilders.add(actionDirectoryBuilder);
-
-            final actionDirectoryRefer = refer(actionDirectoryBuilder.name!);
-            // 2. 액션 디렉토리를 상위 디렉토리에 추가
-            currentDirectoryBuilder.methods.add(Method((m) => m
-              ..returns = actionDirectoryRefer
-              ..type = MethodType.getter
-              ..name = directoryName
-              ..body = refer(putIfAbsentDirectoryName).call([
-                literalString(directoryName),
-                Method((m) => m
-                  ..lambda = true
-                  ..body = actionDirectoryRefer.call([]).code).closure
-              ]).code));
-          } else {
-            actionDirectoryBuilder = actionDirectoriesDefinitionBuilders
-                .firstWhere((def) => def.name == directoryTypeName);
+        TypeReference getReference(TypeMeta typeMeta) {
+          var url = typeMeta.url;
+          if (asset?.isNotEmpty == true &&
+              url != null &&
+              url.startsWith(asset!)) {
+            url = url.replaceAll(RegExp(asset), '.');
           }
 
-          if (index == paths.length - 1) {
-            // 3. 액션 디렉토리에 액션 디스크립터 추가
-            var typeImport = meta.type.url;
-            if (asset?.isNotEmpty == true &&
-                typeImport != null &&
-                typeImport.startsWith(RegExp(asset!))) {
-              typeImport = typeImport.replaceAll(RegExp(asset), '.');
-            }
+          final typeArgs = <Reference>[];
+          typeMeta.typeArguments.forEach((typeArg) {
+            typeArgs.add(getReference(typeArg));
+          });
 
-            TypeReference getReference(TypeMeta typeMeta) {
-              var url = typeMeta.url;
-              if (asset?.isNotEmpty == true &&
-                  url != null &&
-                  url.startsWith(asset!)) {
-                url = url.replaceAll(RegExp(asset), '.');
-              }
+          return TypeReference((t) => t
+            ..symbol = typeMeta.name
+            ..url = url
+            ..isNullable = typeMeta.isNullable
+            ..types.addAll(typeArgs));
+        }
 
-              final typeArgs = <Reference>[];
-              typeMeta.typeArguments.forEach((typeArg) {
-                typeArgs.add(getReference(typeArg));
-              });
-
-              return TypeReference((t) => t
-                ..symbol = typeMeta.name
-                ..url = url
-                ..isNullable = typeMeta.isNullable
-                ..types.addAll(typeArgs));
-            }
-
-            final actionTypeRefer = refer(meta.type.name, typeImport);
-            //디스크립터 추가
-            actionDirectoryBuilder.methods.add(Method((m) => m
-              ..returns = TypeReference((t) => t
-                ..symbol = _getTypeName(actionDescriptorType)
-                ..url = actionBoxImport
-                ..types.addAll([
-                  actionTypeRefer,
-                  getReference(meta.parameterType),
-                  getReference(meta.resultType)
-                ]))
-              ..name = meta.alias
-              ..type = MethodType.getter
+        final actionTypeRefer = refer(meta.type.name, typeImport);
+        //디스크립터 추가
+        directoryBuilder.methods.add(Method((m) => m
+          ..returns = TypeReference((t) => t
+            ..symbol = _getTypeName(actionDescriptorType)
+            ..url = actionBoxImport
+            ..types.addAll([
+              actionTypeRefer,
+              getReference(meta.parameterType),
+              getReference(meta.resultType)
+            ]))
+          ..name = meta.alias
+          ..type = MethodType.getter
+          ..lambda = true
+          ..body = refer(putIfAbsentDescriptorName).call([
+            literalString(meta.alias),
+            Method((m) => m
               ..lambda = true
-              ..body = refer(putIfAbsentDescriptorName).call([
-                literalString(meta.alias),
-                Method((m) => m
-                  ..lambda = true
-                  ..body = actionTypeRefer.call([]).code).closure
-              ]).code));
-          } else {
-            currentDirectoryBuilder = actionDirectoryBuilder;
-          }
-        });
+              ..body = actionTypeRefer.call([]).code).closure
+          ]).code));
       });
     });
 
