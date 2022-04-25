@@ -25,7 +25,9 @@ class ActionMetaGenerator extends GeneratorForAnnotation<ActionConfig> {
 
     final alias = annotation.read('alias').stringValue;
     final parents =
-        annotation.read('parents').listValue.map((e) => e.toStringValue());
+        annotation.read('parents').listValue.map((e) => e.toStringValue())
+            .cast<String>()
+            .toList();
 
     String? getUrl(Element? element) {
       var url = element?.source?.uri.toString();
@@ -65,10 +67,7 @@ class ActionMetaGenerator extends GeneratorForAnnotation<ActionConfig> {
 
     final meta = ActionMeta(
       alias: alias,
-      parents: parents
-          .where((p) => p != null && p.isNotEmpty)
-          .cast<String>()
-          .toList(),
+      parents: parents,
       type: TypeMeta(
           name: element.name!,
           url: element.source!.uri.toString(),

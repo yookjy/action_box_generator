@@ -55,7 +55,11 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
     final metaDataList = <ActionMeta>[];
     await for (final id in buildStep.findAssets(actionMetaFiles)) {
       final json = jsonDecode(await buildStep.readAsString(id));
-      metaDataList.add(ActionMeta.fromJson(json));
+      var actionMeta = ActionMeta.fromJson(json);
+      if (actionMeta.parents.isEmpty) {
+        actionMeta.parents.add('');
+      };
+      metaDataList.add(actionMeta);
     }
 
     final actionRootBuilder = ClassBuilder()
