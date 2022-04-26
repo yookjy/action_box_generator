@@ -24,10 +24,12 @@ class ActionMetaGenerator extends GeneratorForAnnotation<ActionConfig> {
     }
 
     final alias = annotation.read('alias').stringValue;
-    final parents =
-        annotation.read('parents').listValue.map((e) => e.toStringValue())
-            .cast<String>()
-            .toList();
+    final parents = annotation
+        .read('parents')
+        .listValue
+        .map((e) => e.toStringValue())
+        .cast<String>()
+        .toList();
 
     String? getUrl(Element? element) {
       var url = element?.source?.uri.toString();

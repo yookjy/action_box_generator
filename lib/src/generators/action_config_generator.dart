@@ -58,7 +58,8 @@ class ActionConfigGenerator extends GeneratorForAnnotation<ActionBoxConfig> {
       var actionMeta = ActionMeta.fromJson(json);
       if (actionMeta.parents.isEmpty) {
         actionMeta.parents.add('');
-      };
+      }
+      ;
       metaDataList.add(actionMeta);
     }
 
